@@ -6,8 +6,8 @@
 % Version : 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [signal_sortie] = segmentation_fft(signal_entree,vecteur_logique,FS)
-    seuil = 145;
+function [signal_sortie, mean_length] = segmentation_fft(signal_entree,vecteur_logique,FS)
+    seuil = 550;
     N = 4096;
     f =(0:N-1)*FS/N;
     num_fft=0;
@@ -18,6 +18,9 @@ function [signal_sortie] = segmentation_fft(signal_entree,vecteur_logique,FS)
     positions = [fronts_montants fronts_descendants];
 
     signal_sortie = signal_entree;
+    
+    sum = 0;
+    count = 0;
     
     for i=1:length(positions)
         segment = signal_entree(positions(i,1):positions(i,2));
@@ -45,10 +48,18 @@ function [signal_sortie] = segmentation_fft(signal_entree,vecteur_logique,FS)
         title(sprintf('Segment %i ,value %i',i,passage)) 
         
         % Definir la valeur qui permet de differencier les deux classes
-        %if passage < ?? 
-        %   signal_sortie(positions(i,1):positions(i,2)) = 0;
-        %end
+        if passage < seuil 
+           signal_sortie(positions(i,1):positions(i,2)) = 0;
+        else
+            lengthSeconds = L / FS;
+            if lengthSeconds > 0.5
+              sum = sum + lengthSeconds;
+              count = count + 1;
+            end
+        end
     end
+    
+   mean_length = sum / count;
    
     
 end
